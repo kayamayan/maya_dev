@@ -1,6 +1,5 @@
 # Copyright Epic Games, Inc. All Rights Reserved.
 import unreal
-from datetime import datetime
 
 # This example is an implementation of an "executor" which is responsible for
 # deciding how a queue is rendered, giving you complete control over the before,
@@ -68,11 +67,7 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         self.socket_message_recieved_delegate.add_function_unique(self, "on_socket_message");
         self.http_response_recieved_delegate.add_function_unique(self, "on_http_response_recieved")
 
-        # newIndex is a unique index for each send_http_request call that you can store
-        # and retrieve in the on_http_response_recieved function to match the return back
-        # up to the original intent.
-        newIndex = self.send_http_request("https://google.com", "GET", "", unreal.Map(str, str))
-            
+
     # We can override specific UFunctions declared on the base class with
     # this markup.
     @unreal.ufunction(override=True)
@@ -82,18 +77,28 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         # other system via a REST api or Socket connection you could do that here.
         for x in range(0, 25):
             unreal.log_error("This script is meant as an example to build your own and is not meant to be run on its own. Please read the source code (/Engine/Plugins/MovieScene/MovieRenderPipeline/Content/Python/MoviePipelineExampleRuntimeExecutor.py) for details on how to make your own. This example automatically overrides various settings on jobs to serve as an example for how to do that in your own script if needed.")
+            
+        # If your executor needs to make async HTTP calls (such as fetching the value from a third party management library)
+        # you can do that with the following code:
         
+        # newIndex is a unique index for each send_http_request call that you can store
+        # and retrieve in the on_http_response_recieved function to match the return back
+        # up to the original intent.
+        # newIndex = self.send_http_request("https://google.com", "GET", "", unreal.Map(str, str))
+        
+        # If your executor wants to make TCP socket connections to send data back and forth with a third party software,
+        # you can do that with the following code:
         # Here's an example of how to open a TCP socket connection. This example
         # doesn't need one, but is shown here in the event you wish to build a more
         # in depth integration into render farm software.
-        socketConnected = self.connect_socket("127.0.0.1", 6783)
-        if socketConnected == True:
-            # Send back a polite hello world message! It will be sent over the socket
-            # with a 4 byte size prefix so you know how many bytes to expect before
-            # the message is complete.
-            self.send_socket_message("Hello World!")
-        else:
-            unreal.log_warning("This is an example warning for when a socket fails to connect.")
+        #socketConnected = self.connect_socket("127.0.0.1", 6783)
+        #if socketConnected == True:
+        #    # Send back a polite hello world message! It will be sent over the socket
+        #    # with a 4 byte size prefix so you know how many bytes to expect before
+        #    # the message is complete.
+        #    self.send_socket_message("Hello World!")
+        #else:
+        #    unreal.log_warning("This is an example warning for when a socket fails to connect.")
             
         
         # Here's how we can scan the command line for any additional args such as the path to a level sequence.
@@ -180,7 +185,7 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         self.activeMoviePipeline = unreal.new_object(self.target_pipeline_class, outer=self.get_last_loaded_world(), base_type=unreal.MoviePipeline);
         
         # Register to any callbacks we want
-        self.activeMoviePipeline.on_movie_pipeline_finished_delegate.add_function_unique(self, "on_movie_pipeline_finished")
+        self.activeMoviePipeline.on_movie_pipeline_work_finished_delegate.add_function_unique(self, "on_movie_pipeline_finished")
         
         # And finally tell it to start working. It will continue working
         # and then call the on_movie_pipeline_finished_delegate function at the end.
@@ -221,14 +226,14 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         
     # This declares a new UFunction and specifies the return type and the parameter types
     # callbacks for delegates need to be marked as UFunctions.
-    @unreal.ufunction(ret=None, params=[unreal.MoviePipeline, bool])
-    def on_movie_pipeline_finished(self, inMoviePipeline, bSuccess):
+    @unreal.ufunction(ret=None, params=[unreal.MoviePipelineOutputData])
+    def on_movie_pipeline_finished(self, results):
         # We're not processing a whole queue, only a single job so we can
         # just assume we've reached the end. If your queue had more than 
         # one job, now would be the time to increment the index of which
         # job you are working on, and start the next one (instead of calling
         # on_executor_finished_impl which should be the end of the whole queue)
-        unreal.log("Finished rendering movie! Success: " + str(bSuccess))
+        unreal.log("Finished rendering movie! Success: " + str(results.success))
         self.activeMoviePipeline = None
         self.on_executor_finished_impl()
         

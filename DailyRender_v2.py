@@ -1,5 +1,5 @@
 from P4 import P4, P4Exception
-import urllib.request
+# import urllib.request
 import json
 import subprocess
 import os
@@ -19,20 +19,24 @@ def newest(path):
 
 
 render_engines = {
-    'UE_4.25': r"C:\Program Files\Epic Games\UE_4.25\Engine\Binaries\Win64\UE4Editor.exe",
-    'UE_4.26': r"C:\Program Files\Epic Games\UE_4.26\Engine\Binaries\Win64\UE4Editor.exe",
-    'UE_4.27': r"C:\Program Files\Epic Games\UE_4.27\Engine\Binaries\Win64\UE4Editor.exe",
+    # 'UE_4.25': r"C:\Program Files\Epic Games\UE_4.25\Engine\Binaries\Win64\UE4Editor.exe",
+    # 'UE_4.26': r"C:\Program Files\Epic Games\UE_4.26\Engine\Binaries\Win64\UE4Editor.exe",
+    # 'UE_4.27': r"C:\Program Files\Epic Games\UE_4.27\Engine\Binaries\Win64\UE4Editor.exe",
     'UE_5.0': r"C:\Program Files\Epic Games\UE_5.0\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.1': r"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe",
-    'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
+    'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
+    # 'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
 }
 
+render_jeb_file = r"\\publicfile\Cinema\9_Daily\data\render_jobs.json"
 #ffmpeg = r"C:\Program Files\ImageMagick-7.0.11-Q16-HDRI\ffmpeg.exe"
-ffmpeg = r"\\cinemaserver\Tcinema\VTLIB\apps\FFMPEG\bin\ffmpeg.exe"
+ffmpeg = r"\\publicfile\Cinema\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 
-server_address = "http://vaalt/daily/"
-data_string = urllib.request.urlopen(server_address).read()
-jobs = json.loads(data_string)
+# server_address = "http://vaalt/daily/"
+# data_string = urllib.request.urlopen(server_address).read()
+# jobs = json.loads(data_string)
+
+jobs = json.load(open(render_jeb_file, "r"))
 
 
 p4 = P4()
