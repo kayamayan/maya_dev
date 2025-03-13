@@ -4,8 +4,8 @@
 
 @set DAYSTRING=%YEAR%%MONTH%%DAY%
 
-mkdir T:\9_Daily\%DAYSTRING%
-xcopy T:\9_Daily\_PERSISTENT\*.* T:\9_Daily\%DAYSTRING% /y >> "C:\DailyRender\persistent_%DAYSTRING%.log"
+mkdir Z:\9_Daily\%DAYSTRING%
+xcopy Z:\9_Daily\_PERSISTENT\*.* Z:\9_Daily\%DAYSTRING% /y >> "C:\DailyRender\persistent_%DAYSTRING%.log"
 
-"C:\Program Files\Python37\python.exe" C:\DailyRender\DailyRender_v2.py >> "C:\DailyRender\render_%DAYSTRING%.log"
+"python.exe" F:\gitRepos\daily_render\DailyRender_v2.py >> "C:\DailyRender\render_%DAYSTRING%.log"
 

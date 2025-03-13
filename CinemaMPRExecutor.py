@@ -45,7 +45,7 @@ from datetime import datetime
 #
 # If you are looking for how to render in-editor using Python, see the MoviePipelineEditorExample.py script instead.
 @unreal.uclass()
-class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor):
+class CinemaMPRExecutor(unreal.MoviePipelinePythonHostExecutor):
     
     # Declare the properties of the class here. You can use basic
     # Python types (int, str, bool) as well as unreal properties.
@@ -133,9 +133,11 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         newJob = self.pipelineQueue.allocate_new_job(unreal.MoviePipelineExecutorJob)
         newJob.sequence = unreal.SoftObjectPath(levelSequencePath)
 
-        newJob.author = 'VisualTech Daily'
+        newJob.author = 'Cinema Daily'
         newJob.job_name = datetime.today().strftime('%Y-%m-%d')
         
+        newConfig = unreal.load_asset("/Game/Cinema/Render_Setting/MW_Early_4K_422HQ")
+        newJob.set_configuration(newConfig)
         # Now we can configure the job. Calling find_or_add_setting_by_class is how you add new settings.
         outputSetting = newJob.get_configuration().find_or_add_setting_by_class(unreal.MoviePipelineOutputSetting)
         # outputSetting.output_resolution = unreal.IntPoint(1280, 720)
@@ -186,7 +188,7 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         self.activeMoviePipeline = unreal.new_object(self.target_pipeline_class, outer=self.get_last_loaded_world(), base_type=unreal.MoviePipeline);
         
         # Register to any callbacks we want
-        self.activeMoviePipeline.on_movie_pipeline_finished_delegate.add_function_unique(self, "on_movie_pipeline_finished")
+        self.activeMoviePipeline.on_movie_pipeline_work_finished_delegate.add_function_unique(self, "on_movie_pipeline_finished")
         
         # And finally tell it to start working. It will continue working
         # and then call the on_movie_pipeline_finished_delegate function at the end.
@@ -197,7 +199,7 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
     @unreal.ufunction(override=True)
     def on_begin_frame(self):
         # It is important that we call the super so that async socket messages get processed.
-        super(MoviePipelineExampleRuntimeExecutor, self).on_begin_frame()        
+        super(CinemaMPRExecutor, self).on_begin_frame()        
         
         if self.activeMoviePipeline:
             unreal.log("Progress: %f" % unreal.MoviePipelineLibrary.get_completion_percentage(self.activeMoviePipeline))
@@ -227,14 +229,14 @@ class MoviePipelineExampleRuntimeExecutor(unreal.MoviePipelinePythonHostExecutor
         
     # This declares a new UFunction and specifies the return type and the parameter types
     # callbacks for delegates need to be marked as UFunctions.
-    @unreal.ufunction(ret=None, params=[unreal.MoviePipeline, bool])
-    def on_movie_pipeline_finished(self, inMoviePipeline, bSuccess):
+    @unreal.ufunction(ret=None, params=[unreal.MoviePipelineOutputData])
+    def on_movie_pipeline_finished(self, results):
         # We're not processing a whole queue, only a single job so we can
         # just assume we've reached the end. If your queue had more than 
         # one job, now would be the time to increment the index of which
         # job you are working on, and start the next one (instead of calling
         # on_executor_finished_impl which should be the end of the whole queue)
-        unreal.log("Finished rendering movie! Success: " + str(bSuccess))
+        unreal.log("Finished rendering movie! Success: " + str(results.success))
         self.activeMoviePipeline = None
         self.on_executor_finished_impl()
         

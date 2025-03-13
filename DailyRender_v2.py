@@ -6,7 +6,7 @@ import os
 import shutil
 import datetime
 import time
-from pathlib import Path
+# from pathlib import Path
 
 
 from tendo import singleton
@@ -19,16 +19,14 @@ def newest(path):
 
 
 render_engines = {
-    # 'UE_4.25': r"C:\Program Files\Epic Games\UE_4.25\Engine\Binaries\Win64\UE4Editor.exe",
-    # 'UE_4.26': r"C:\Program Files\Epic Games\UE_4.26\Engine\Binaries\Win64\UE4Editor.exe",
-    # 'UE_4.27': r"C:\Program Files\Epic Games\UE_4.27\Engine\Binaries\Win64\UE4Editor.exe",
     'UE_5.0': r"C:\Program Files\Epic Games\UE_5.0\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.1': r"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe",
-    'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
+    # 'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
+    'UE_5.5': r"E:\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
     # 'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
 }
 
-render_jeb_file = r"\\publicfile\Cinema\9_Daily\data\render_jobs.json"
+render_job_file = r"\\publicfile\Cinema\9_Daily\data\render_jobs.json"
 #ffmpeg = r"C:\Program Files\ImageMagick-7.0.11-Q16-HDRI\ffmpeg.exe"
 ffmpeg = r"\\publicfile\Cinema\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 
@@ -36,20 +34,19 @@ ffmpeg = r"\\publicfile\Cinema\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 # data_string = urllib.request.urlopen(server_address).read()
 # jobs = json.loads(data_string)
 
-jobs = json.load(open(render_jeb_file, "r"))
-
+jobs = json.load(open(render_job_file, "r"))
 
 p4 = P4()
-p4.port = "cinema:1666"
-p4.user = "Tech_T"
-p4.password = "Tech_T_pass"
+p4.port = "CINEMAperforce:1666"
+p4.user = "toribro"
+p4.password = "rmwlrkxsp18!"
 p4.exception_level = 1
 p4.connect()
 
 today = datetime.date.today().strftime("%Y%m%d")
 
 
-for job in jobs:
+for job in jobs["daily_render"]:
     is_activated = job['activate']
     host = job['host']
     if not is_activated or host != 1:
@@ -68,18 +65,18 @@ for job in jobs:
         custom_start = job.get('custom_start', 1)
         daily_path = job['output_directory']
 
-        if "\\\\cinemaserver\\Tcinema\\9_Daily" in daily_path:
-            daily_path = f"\\\\cinemaserver\\Tcinema\\9_Daily\\{today}".replace("\\\\cinemaserver\\Tcinema", "T:")
+        if "\\\\publicfile\\Cinema\\9_Daily" in daily_path:
+            daily_path = f"\\\\publicfile\\Cinema\\9_Daily\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
         else:
-            daily_path = f"{daily_path}\\{today}".replace("\\\\cinemaserver\\Tcinema", "T:")
+            daily_path = f"{daily_path}\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
         
         if not os.path.exists(daily_path):
             os.makedirs(daily_path)
 
         print(f"Daily Path : {daily_path}")
 
-        movie_path = f"D:/DAILYRENDER/{today}"
-        render_path = f"D:/DAILYRENDER/{project_name}/{today}"
+        movie_path = f"F:/DAILYRENDER/{today}"
+        render_path = f"F:/DAILYRENDER/{project_name}/{today}"
 
         if not os.path.exists(movie_path):
             os.makedirs(movie_path)
@@ -93,10 +90,12 @@ for job in jobs:
         # render_warmup = job['render_warmup']
 
         render_command = f'"{render_engine}" "{uproject_path}" {umap_path} -game -unattended -MoviePipelineLocalExecutorClass=/Script/MovieRenderPipelineCore.MoviePipelinePythonHostExecutor'
-        render_command += ' -ExecutorPythonClass=/Engine/PythonTypes.MoviePipelineExampleRuntimeExecutor '
+        render_command += ' -ExecutorPythonClass=/Engine/PythonTypes.CinemaMPRExecutor '
         render_command += f'-LevelSequence="{seq_path}" -OutputDirectory="{render_path}" -OutputName="{render_name}" -ResX=1920 -ResY=1080 -RenderResX={resx} -RenderResY={resy} -MovieWarmUpFrames=100 -MovieDelayBeforeWarmUp=1 -log -notexturestreaming -windowed'
-        if render_engine.startswith("4"):
-            render_command += ' -dx11'
+        
+        # 언리얼 4버전에서 다이렉트엑스11 사용.
+        # if render_engine.startswith("4"):
+        #     render_command += ' -dx11'
 
         render_command = render_command.replace("\\", "\\\\")
         subprocess.call(render_command)
@@ -108,7 +107,7 @@ for job in jobs:
 
         if os.path.isfile(logFile):
             try:
-                shutil.move(logFile, f"T:\\9_Daily\\_RENDER\\Logs\\{render_name}_render.log")
+                shutil.move(logFile, f"Z:\\9_Daily\\_RENDER\\Logs\\{render_name}_render.log")
             except:
                 pass
 
