@@ -45,6 +45,7 @@ p4.connect()
 
 today = datetime.date.today().strftime("%Y%m%d")
 
+onedrive_path = "C:\Users\cine-render\OneDrive - Madngine\Daily"
 
 for job in jobs["daily_render"]:
     is_activated = job['activate']
@@ -121,6 +122,7 @@ for job in jobs["daily_render"]:
         if os.path.isfile(f"{movie_path}\\{render_name}.mp4"):
             try:
                 shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{daily_path}\\{render_name}.mp4")
+                shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{onedrive_path}\\{render_name}.mp4")
             except:
                 pass
         time.sleep(300)
