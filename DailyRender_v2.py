@@ -22,13 +22,13 @@ render_engines = {
     'UE_5.0': r"C:\Program Files\Epic Games\UE_5.0\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.1': r"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe",
     # 'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
-    'UE_5.5': r"E:\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
+    'UE_5.5': r"D:\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
     # 'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
 }
 
-render_job_file = r"\\publicfile\Cinema\9_Daily\data\render_jobs.json"
+render_job_file = r"Z:\9_Daily\data\render_jobs.json"
 #ffmpeg = r"C:\Program Files\ImageMagick-7.0.11-Q16-HDRI\ffmpeg.exe"
-ffmpeg = r"\\publicfile\Cinema\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
+ffmpeg = r"Z:\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 
 # server_address = "http://vaalt/daily/"
 # data_string = urllib.request.urlopen(server_address).read()
@@ -37,9 +37,9 @@ ffmpeg = r"\\publicfile\Cinema\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 jobs = json.load(open(render_job_file, "r"))
 
 p4 = P4()
-p4.port = "CINEMAperforce:1666"
-p4.user = "toribro"
-p4.password = "rmwlrkxsp18!"
+p4.port = "CinemaPerforce:1666"
+p4.user = "cine-render"
+p4.password = "Timeismoney$1$"
 p4.exception_level = 1
 p4.connect()
 
@@ -75,8 +75,8 @@ for job in jobs["daily_render"]:
 
         print(f"Daily Path : {daily_path}")
 
-        movie_path = f"F:/DAILYRENDER/{today}"
-        render_path = f"F:/DAILYRENDER/{project_name}/{today}"
+        movie_path = f"E:/DAILYRENDER/{today}"
+        render_path = f"E:/DAILYRENDER/{project_name}/{today}"
 
         if not os.path.exists(movie_path):
             os.makedirs(movie_path)

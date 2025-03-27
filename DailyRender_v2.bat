@@ -5,7 +5,7 @@
 @set DAYSTRING=%YEAR%%MONTH%%DAY%
 
 mkdir Z:\9_Daily\%DAYSTRING%
-xcopy Z:\9_Daily\_PERSISTENT\*.* Z:\9_Daily\%DAYSTRING% /y >> "C:\DailyRender\persistent_%DAYSTRING%.log"
+xcopy Z:\9_Daily\_PERSISTENT\*.* Z:\9_Daily\%DAYSTRING% /y >> "D:\dailyrender\persistent_%DAYSTRING%.log"
 
-"python.exe" F:\gitRepos\daily_render\DailyRender_v2.py >> "C:\DailyRender\render_%DAYSTRING%.log"
+"C:\Users\cine-render\AppData\Local\Programs\Python\Python311\python.exe" D:\dailyrender\DailyRender_v2.py >> "D:\dailyrender\render_%DAYSTRING%.log"
 
