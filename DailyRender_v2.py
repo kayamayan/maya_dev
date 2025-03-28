@@ -45,7 +45,7 @@ p4.connect()
 
 today = datetime.date.today().strftime("%Y%m%d")
 
-onedrive_path = "C:\Users\cine-render\OneDrive - Madngine\Daily"
+onedrive_path = r"C:\Users\cine-render\OneDrive - Madngine\Daily"
 
 for job in jobs["daily_render"]:
     is_activated = job['activate']
