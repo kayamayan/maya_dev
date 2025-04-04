@@ -35,13 +35,7 @@ ffmpeg = r"Z:\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 # jobs = json.loads(data_string)
 
 jobs = json.load(open(render_job_file, "r"))
-
-p4 = P4()
-p4.port = "CinemaPerforce:1666"
-p4.user = "cine-render"
-p4.password = "Timeismoney$1$"
-p4.exception_level = 1
-p4.connect()
+# p4.connect()
 
 today = datetime.date.today().strftime("%Y%m%d")
 
@@ -53,6 +47,13 @@ for job in jobs["daily_render"]:
     if not is_activated or host != 1:
         continue
     try:
+        p4 = P4()
+        p4.port = "CinemaPerforce:1666"
+        p4.user = "cine-render"
+        p4.password = "Timeismoney$1$"
+        p4.exception_level = 1
+        p4.connect()
+        
         render_engine = render_engines[job['engine_version']]
         uproject_res = p4.run("where", job['ue_project'])
         uproject_path = uproject_res[0]['path']
@@ -64,7 +65,8 @@ for job in jobs["daily_render"]:
         project_name = job['project_name']
         render_name = job['render_name'] + f"_{today}"
         custom_start = job.get('custom_start', 1)
-        daily_path = job['output_directory']
+        # daily_path = job['output_directory']
+        daily_path = job['output_directory'] + "_TEST"
 
         if "\\\\publicfile\\Cinema\\9_Daily" in daily_path:
             daily_path = f"\\\\publicfile\\Cinema\\9_Daily\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
