@@ -65,8 +65,8 @@ for job in jobs["daily_render"]:
         project_name = job['project_name']
         render_name = job['render_name'] + f"_{today}"
         custom_start = job.get('custom_start', 1)
-        # daily_path = job['output_directory']
-        daily_path = job['output_directory'] + "_TEST"
+        daily_path = job['output_directory']
+        # daily_path = job['output_directory'] + "_TEST"
 
         if "\\\\publicfile\\Cinema\\9_Daily" in daily_path:
             daily_path = f"\\\\publicfile\\Cinema\\9_Daily\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
@@ -77,6 +77,11 @@ for job in jobs["daily_render"]:
             os.makedirs(daily_path)
 
         print(f"Daily Path : {daily_path}")
+
+        onedrive_path = f"{onedrive_path}\\{today}"
+        
+        if not os.path.exists(onedrive_path):
+            os.makedirs(onedrive_path)
 
         movie_path = f"E:/DAILYRENDER/{today}"
         render_path = f"E:/DAILYRENDER/{project_name}/{today}"
