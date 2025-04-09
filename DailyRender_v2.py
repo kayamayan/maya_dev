@@ -78,10 +78,10 @@ for job in jobs["daily_render"]:
 
         print(f"Daily Path : {daily_path}")
 
-        onedrive_path = f"{onedrive_path}\\{today}"
+        onedrive_daily_path = f"{onedrive_path}\\{today}"
         
-        if not os.path.exists(onedrive_path):
-            os.makedirs(onedrive_path)
+        if not os.path.exists(onedrive_daily_path):
+            os.makedirs(onedrive_daily_path)
 
         movie_path = f"E:/DAILYRENDER/{today}"
         render_path = f"E:/DAILYRENDER/{project_name}/{today}"
@@ -129,7 +129,7 @@ for job in jobs["daily_render"]:
         if os.path.isfile(f"{movie_path}\\{render_name}.mp4"):
             try:
                 shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{daily_path}\\{render_name}.mp4")
-                shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{onedrive_path}\\{render_name}.mp4")
+                shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{onedrive_daily_path}\\{render_name}.mp4")
             except:
                 pass
         time.sleep(300)
