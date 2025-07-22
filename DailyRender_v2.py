@@ -23,6 +23,7 @@ render_engines = {
     'UE_5.1': r"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\Win64\UnrealEditor.exe",
     # 'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.5': r"D:\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
+    'UE_5.6': r"D:\Epic Games\UE_5.6\Engine\Binaries\Win64\UnrealEditor.exe",
     # 'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
 }
 
@@ -41,6 +42,17 @@ today = datetime.date.today().strftime("%Y%m%d")
 
 onedrive_path = r"C:\Users\cine-render\OneDrive - Madngine\Daily"
 
+def force_drive_d(path):
+    # 절대 경로로 변환
+    abs_path = os.path.abspath(path)
+    
+    # 드라이브가 D:가 아니라면, 드라이브 문자만 D:로 바꿈
+    drive, rest = os.path.splitdrive(abs_path)
+    if drive.upper() != "D:":
+        return os.path.join("D:", rest.lstrip("\\/"))
+    else:
+        return abs_path
+    
 for job in jobs["daily_render"]:
     is_activated = job['activate']
     host = job['host']
@@ -57,6 +69,7 @@ for job in jobs["daily_render"]:
         render_engine = render_engines[job['engine_version']]
         uproject_res = p4.run("where", job['ue_project'])
         uproject_path = uproject_res[0]['path']
+        uproject_path = force_drive_d(uproject_path)
         uproject_local_path = os.path.dirname(uproject_res[0]['depotFile'])
         p4.run("sync", uproject_local_path + "/...")
 
@@ -104,6 +117,7 @@ for job in jobs["daily_render"]:
         # 언리얼 4버전에서 다이렉트엑스11 사용.
         # if render_engine.startswith("4"):
         #     render_command += ' -dx11'
+        # render_command += ' -dx11'
 
         render_command = render_command.replace("\\", "\\\\")
         subprocess.call(render_command)

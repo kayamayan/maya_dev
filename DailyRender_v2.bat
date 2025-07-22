@@ -5,6 +5,7 @@
 @set DAYSTRING=%YEAR%%MONTH%%DAY%
 
 mkdir Z:\9_Daily\%DAYSTRING%
+mkdir "C:\Users\cine-render\OneDrive - Madngine\Daily\%DAYSTRING%"
 xcopy Z:\9_Daily\_PERSISTENT\*.* Z:\9_Daily\%DAYSTRING% /y >> "D:\dailyrender\persistent_%DAYSTRING%.log"
 xcopy "C:\Users\cine-render\OneDrive - Madngine\Daily\_PERSISTENT\*.*" "C:\Users\cine-render\OneDrive - Madngine\Daily\%DAYSTRING%" /y >> "D:\dailyrender\persistent_%DAYSTRING%.log"
 
