@@ -1,5 +1,5 @@
 from P4 import P4, P4Exception
-# import urllib.request
+from urllib import request, error
 import json
 import subprocess
 import os
@@ -24,18 +24,29 @@ render_engines = {
     # 'UE_5.5': r"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.5': r"D:\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe",
     'UE_5.6': r"D:\Epic Games\UE_5.6\Engine\Binaries\Win64\UnrealEditor.exe",
+    'UE_5.8': r"D:\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"
     # 'TL_4.25': r"C:\UE4\UnrealEngine4_25\Engine\Binaries\Win64\UE4Editor.exe"
 }
 
-render_job_file = r"Z:\9_Daily\data\render_jobs.json"
 #ffmpeg = r"C:\Program Files\ImageMagick-7.0.11-Q16-HDRI\ffmpeg.exe"
 ffmpeg = r"Z:\4_Lib\apps\FFMPEG\bin\ffmpeg.exe"
 
-# server_address = "http://vaalt/daily/"
-# data_string = urllib.request.urlopen(server_address).read()
-# jobs = json.loads(data_string)
+DAILY_API_URL = "http://localhost:3000/api/daily_render"
 
-jobs = json.load(open(render_job_file, "r"))
+def fetch_daily_render_jobs():
+    opener = request.build_opener(request.ProxyHandler({}))
+    headers = {
+        "Accept": "application/json",
+        "Connection": "close",
+        "X-MCRM-Client": "VtDailyRender-Unreal",
+        "X-MCRM-User": "DailyRender_v2",
+    }
+    req = request.Request(DAILY_API_URL, headers=headers, method="GET")
+    with opener.open(req, timeout=5) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data if isinstance(data, list) else []
+
+jobs = {"daily_render": fetch_daily_render_jobs()}
 # p4.connect()
 
 today = datetime.date.today().strftime("%Y%m%d")
@@ -49,13 +60,13 @@ def force_drive_d(path):
     # 드라이브가 D:가 아니라면, 드라이브 문자만 D:로 바꿈
     drive, rest = os.path.splitdrive(abs_path)
     if drive.upper() != "D:":
-        return os.path.join("D:", rest.lstrip("\\/"))
+        return os.path.join("D:\\", rest.lstrip("\\/"))
     else:
         return abs_path
     
 for job in jobs["daily_render"]:
-    is_activated = job['activate']
-    host = job['host']
+    is_activated = job.get('activate', 0)
+    host = job.get('host', 1)
     if not is_activated or host != 1:
         continue
     try:
@@ -67,9 +78,10 @@ for job in jobs["daily_render"]:
         p4.connect()
         
         render_engine = render_engines[job['engine_version']]
-        uproject_res = p4.run("where", job['ue_project'])
+        ue_project_fixed = force_drive_d(job['ue_project'])
+        print(job['ue_project'], ue_project_fixed)
+        uproject_res = p4.run("where", ue_project_fixed)
         uproject_path = uproject_res[0]['path']
-        uproject_path = force_drive_d(uproject_path)
         uproject_local_path = os.path.dirname(uproject_res[0]['depotFile'])
         p4.run("sync", uproject_local_path + "/...")
 
@@ -77,7 +89,7 @@ for job in jobs["daily_render"]:
         seq_path = job['ue_sequence']
         project_name = job['project_name']
         render_name = job['render_name'] + f"_{today}"
-        custom_start = job.get('custom_start', 1)
+        custom_start = job.get('custom_start', 0)
         daily_path = job['output_directory']
         # daily_path = job['output_directory'] + "_TEST"
 
@@ -139,7 +151,7 @@ for job in jobs["daily_render"]:
         ffmpeg_command += f"\"{movie_path}\\{render_name}.mp4\""
         
         subprocess.call(ffmpeg_command)
-
+        print(ffmpeg_command)
         if os.path.isfile(f"{movie_path}\\{render_name}.mp4"):
             try:
                 shutil.copy(f"{movie_path}\\{render_name}.mp4", f"{daily_path}\\{render_name}.mp4")
