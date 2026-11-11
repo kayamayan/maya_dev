@@ -69,6 +69,22 @@ def to_depot_path(path):
     return abs_path
 
 
+def resolve_daily_path(raw_path, today_str):
+    if not raw_path or not raw_path.strip():
+        return os.path.join("Z:\\9_Daily", today_str)
+
+    cleaned = raw_path.strip().replace("/", "\\")
+    cleaned = re.sub(r"^\\{2,}publicfile\\cinema(?=\\|$)", "Z:", cleaned, flags=re.IGNORECASE)
+    norm = os.path.normpath(cleaned)
+    if norm.upper() == "Z:":
+        norm = "Z:\\"
+
+    if re.match(r"^Z:\\9_Daily(?=\\|$)", norm, flags=re.IGNORECASE):
+        return os.path.join("Z:\\9_Daily", today_str)
+
+    return os.path.join(norm, today_str)
+
+
 for job in jobs["daily_render"]:
     is_activated = job.get('activate', 0)
     host = job.get('host', 1)
@@ -96,13 +112,7 @@ for job in jobs["daily_render"]:
         project_name = job['project_name']
         render_name = job['render_name'] + f"_{today}"
         custom_start = job.get('custom_start', 0)
-        daily_path = job['output_directory']
-        # daily_path = job['output_directory'] + "_TEST"
-
-        if "\\\\publicfile\\Cinema\\9_Daily" in daily_path:
-            daily_path = f"\\\\publicfile\\Cinema\\9_Daily\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
-        else:
-            daily_path = f"{daily_path}\\{today}".replace("\\\\publicfile\\Cinema", "Z:")
+        daily_path = resolve_daily_path(job.get('output_directory', ''), today)
         
         if not os.path.exists(daily_path):
             os.makedirs(daily_path)
