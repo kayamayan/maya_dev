@@ -1,6 +1,7 @@
 from P4 import P4, P4Exception
 from urllib import request, error
 import json
+import re
 import subprocess
 import os
 import shutil
@@ -53,22 +54,27 @@ today = datetime.date.today().strftime("%Y%m%d")
 
 onedrive_path = r"C:\Users\cine-render\OneDrive - Madngine\Daily"
 
-def force_drive_d(path):
-    # 절대 경로로 변환
+def to_depot_path(path):
+    normalized = path.strip().replace("\\", "/")
+    match = re.search(r"/(depot|resource)/(.+)$", normalized, re.IGNORECASE)
+    if match:
+        prefix = match.group(1).lower()
+        rest = match.group(2).lstrip("/")
+        return f"//{prefix}/{rest}"
+
     abs_path = os.path.abspath(path)
-    
-    # 드라이브가 D:가 아니라면, 드라이브 문자만 D:로 바꿈
     drive, rest = os.path.splitdrive(abs_path)
     if drive.upper() != "D:":
         return os.path.join("D:\\", rest.lstrip("\\/"))
-    else:
-        return abs_path
-    
+    return abs_path
+
+
 for job in jobs["daily_render"]:
     is_activated = job.get('activate', 0)
     host = job.get('host', 1)
     if not is_activated or host != 1:
         continue
+
     try:
         p4 = P4()
         p4.port = "CinemaPerforce:1666"
@@ -78,7 +84,7 @@ for job in jobs["daily_render"]:
         p4.connect()
         
         render_engine = render_engines[job['engine_version']]
-        ue_project_fixed = force_drive_d(job['ue_project'])
+        ue_project_fixed = to_depot_path(job['ue_project'])
         print(job['ue_project'], ue_project_fixed)
         uproject_res = p4.run("where", ue_project_fixed)
         uproject_path = uproject_res[0]['path']
